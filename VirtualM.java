@@ -1,6 +1,5 @@
 /* 
     A virtual memory system with page replacement.
-    Takes as input a 
 */
 
 import java.util.Scanner;
@@ -8,39 +7,45 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Collection;
 import java.io.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
+public class VirtualM implements Runnable {
 
-class VirtualM {
-
-    public static void main(String[] args) {
+    private static String inputFileName;    
     
+    public static volatile PCB[] pcbArray = new PCB[Const.MAX_PROCESSES + 1];
+    public static volatile PhysicalMemory memory = new PhysicalMemory();
+    public static volatile int referenceCount = 0;
+    public static volatile int pageFaults = 0;
+    
+    public VirtualM(String input) {
+        inputFileName = input;
+        System.out.println(input);
+    }
+
+    public void run() {
         File input = null;
         Scanner scan = null;
         
         try {
         
-            input = new File(args[0]);
+            input = new File(inputFileName);
             scan = new Scanner(input);
             
         } catch (NullPointerException e) {
             System.err.println("Invalid input file.");
-            System.exit(1);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            System.err.println("Must supply input file as argument.");
             System.exit(1);
         } catch (FileNotFoundException e) {
             System.err.println(e.getMessage());
             System.exit(1); 
         }
         
-        PCB[] pcbArray = new PCB[Const.MAX_PROCESSES + 1];
-        PhysicalMemory memory = new PhysicalMemory();
-        
-        printMemorySnapshot(memory);
-        
         try {
-            for (int referenceCount = 1; scan.hasNext(); referenceCount++) {
+        
+            while (scan.hasNext()) {
                 
+                while(SwingInterface.programController.get() == 0) {}
+                referenceCount++;
                 
                 // get the process ID from the next line of the input
             
@@ -54,8 +59,6 @@ class VirtualM {
                 
                 Integer logicalAddress = scan.nextInt();
                 
-                System.out.printf("%03d : P%d | %06d | ", referenceCount, currentPid, logicalAddress);
-                
                 Integer physicalAddress =
                     pcbArray[currentPid].lookupInPageTable(logicalAddress, memory);
                 
@@ -68,17 +71,8 @@ class VirtualM {
                         pcbArray[removedFrame.getOwnerID()].removeFromPageTable(removedFrame.getPageReference());
                     }
                     
-                    System.out.printf(" %3d\n", removedFrame.getFrameNumber());
-                    
-                } else {
-                
-                    System.out.printf(" %3d\n", physicalAddress);
-                    
                 }
-                
-                printMemorySnapshot(memory);
-                
-                
+                SwingInterface.programController.set(0);
             }
             
         } catch (Exception e) {

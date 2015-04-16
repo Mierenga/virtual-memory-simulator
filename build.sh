@@ -12,3 +12,5 @@ echo "PHYSICAL_MEMORY-------------------------------------------------"
 javac PhysicalMemory.java
 echo "VIRTUALM--------------------------------------------------------"
 javac VirtualM.java
+echo "SWING-----------------------------------------------------------"
+javac SwingInterface.java

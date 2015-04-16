@@ -49,8 +49,7 @@ public class PCB {
     public MemoryFrame performPageReplacement(int pid, int pageRef, PhysicalMemory mem)
     {
         pageFaults++;
-    
-        System.out.print("replacement");
+        VirtualM.pageFaults++;
         MemoryFrame oldFrame = mem.replaceMemoryFrame(pid, pageRef);
         pageTable.addEntry((Integer) pageRef, (Integer) oldFrame.getFrameNumber());
         

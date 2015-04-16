@@ -35,7 +35,6 @@ public class PageTable {
         Integer frameNumber = pageTable.get(pageRef);
         
         if (frameNumber != null) {
-            System.out.print("reference");
             memory.referenceMemoryFrame(frameNumber);
         }
         
