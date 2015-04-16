@@ -17,6 +17,7 @@ public class VirtualM implements Runnable {
     public static volatile PhysicalMemory memory = new PhysicalMemory();
     public static volatile int referenceCount = 0;
     public static volatile int pageFaults = 0;
+    public static volatile boolean complete = false;
     
     public VirtualM(String input) {
         inputFileName = input;
@@ -40,11 +41,21 @@ public class VirtualM implements Runnable {
             System.exit(1); 
         }
         
+        int prevPageFaults = pageFaults;
+        
         try {
         
             while (scan.hasNext()) {
                 
-                while(SwingInterface.programController.get() == 0) {}
+                while(true) {
+                    if (SwingInterface.programController.get() == Const.STEP_ONCE) {
+                        break;
+                    } else if (SwingInterface.programController.get() == Const.RUN_TO_FAULT) {
+                        break;
+                    } else if (SwingInterface.programController.get() == Const.RUN_TO_END) {
+                        break;
+                    }
+                }
                 referenceCount++;
                 
                 // get the process ID from the next line of the input
@@ -72,8 +83,21 @@ public class VirtualM implements Runnable {
                     }
                     
                 }
-                SwingInterface.programController.set(0);
+                
+                if (SwingInterface.programController.get() == Const.RUN_TO_FAULT) {
+                    if (prevPageFaults < pageFaults) {
+                        SwingInterface.programController.set(Const.WAIT);
+                    }
+                } else if (SwingInterface.programController.get() == Const.STEP_ONCE) {
+                    SwingInterface.programController.set(Const.WAIT);
+                }
+                
+                prevPageFaults = pageFaults;
             }
+            
+            complete = true;
+            
+            while (true) {}
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -90,6 +114,7 @@ public class VirtualM implements Runnable {
     * @param token  The first token read by a Scanner in a line
     *                 of the input file
     * @return       The pid of process in the token
+    *
     */
     public static int
     extractPid(String token)
@@ -102,6 +127,7 @@ public class VirtualM implements Runnable {
     * Prints a picture of the current memory in the system
     *
     * @param mem  The PhysicalMemory object to print
+    *
     */
     public static void
     printMemorySnapshot(PhysicalMemory mem)

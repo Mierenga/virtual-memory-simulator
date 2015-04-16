@@ -27,7 +27,24 @@ public class PCB {
     {
         return pid;
     }
-    
+   /**
+    * Returns the page faults for the process
+    *
+    * @return   page faults for process
+    */
+    public int getPageFaults()
+    {
+        return pageFaults;
+    }
+   /**
+    * Returns the memory references for the process
+    *
+    * @return   total memory references for process
+    */
+    public int getMemoryReferences()
+    {
+        return memoryReferences;
+    }
    /**
     * Returns the location of a logical address in memory if it exists,
     * else performs page replacement on the least-recently-used frame
